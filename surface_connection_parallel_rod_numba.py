@@ -5,7 +5,7 @@ import numba
 from numba import njit
 from elastica.joint import FreeJoint
 from elastica.utils import Tolerance
-from free_simulator import FreeAssembly
+
 
 # Join the two rods
 from elastica._linalg import _batch_norm, _batch_cross, _batch_matvec, _batch_dot, _batch_matmul, _batch_matrix_transpose
@@ -229,6 +229,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
         damping_force = -nu * normal_relative_velocity_vector
+        return rod_one_rd2, rod_two_rd2, spring_force
 
         # Compute the total force
     def apply_torques(self, rod_one, index_one, rod_two, index_two):
@@ -477,85 +478,6 @@ class TipToTipStraightJoint(FreeJoint):
 
         return omega
 
-
-#10.24GJM
-#try to add a streching force to an SurfaceJointSideBySide soft arm
-#not sure which value should I put
-k = 1e4
-nu = 1e-4 #粘性阻尼系数
-kt = 1
-rd1_local = 5
-rd2_local = 5
-SurfaceJointSideBySide_try_1 = SurfaceJointSideBySide(k,nu,kt,rd1_local,rd2_local)
-
-rod_one_spec = {
-    'n_elements' : 100,
-    'start' : np.zeros((3,)),
-    'direction' : np.array([0.0,0.0,1.0]), #Q matrix
-    'normal' : np.array([0.0,1.0,0.0]), #法向量
-    'base_length' : 1,
-    'base_radius' : 0.1,
-    'density' : 1000,
-    'nu' : None,
-    'youngs_modulus' : 1e6,
-    'outer_radius' : 0.005,
-    'inner_radius' : 0.002,
-    'damping_constant' : 1e-4
-           }
-
-rod_two_spec = {
-    'n_elements' : 100,
-    'start' : np.array([0.01,0,0]),
-    'direction' : np.array([0.0,0.0,1.0]),
-    'normal' : np.array([0.0,1.0,0.0]),
-    'base_length' : 1,
-    'base_radius' : 0.1,
-    'density' : 1000,
-    'nu' : None,
-    'youngs_modulus' : 1e6,
-    'outer_radius' : 0.005,#现在暂时没用
-    'inner_radius' : 0.002,
-    'damping_constant' : 1e-4
-           }
-
-time_step = 1e-4
-class Environment:
-    def __init__(self,time_step):
-        self.time_step = time_step
-
-env = Environment(time_step)
-assembly = FreeAssembly(env)
-simulator = assembly.simulator
-
-rod_one = assembly.create_rod(name='A_01_rodone',is_first_segment=True, verbose=False, **rod_one_spec)
-rod_two = assembly.create_rod(name='A_02_rodtwo',is_first_segment=True, verbose=False, **rod_two_spec)
-
-assembly.glue_rods_surface_connection(rod_one,rod_two,k,nu,kt)#这两根rods依旧是分开的，所以仍旧需要对两根都施加力，同时用callback
-
-
-
-#how to add external forces?????
-
-# position_collection = np.array(position)  # 杆的位置集合
-# velocity_collection = np.array(velocity)  # 杆的速度集合
-# director_collection = np.array(director)  #杆的方向集合
-# tangents = tangents                       #杆的切线
-# external_forces = external_forces
-# radius = radius  # 杆的半径（示例属性）
-# radius = np.array([0.005])[np.newaxis, :]
-# radius = radius = np.array[0.005]
-# rod_one = Rod(mass=1,position=[0.,0.,0.],velocity=[0.,0.,0.],radius= radius, director=[1.,0.,0.],tangents=[0.,0.,1.],external_forces=[1.,0.,0.])
-# rod_two = Rod(mass=1,position=[0.,0.,0.],velocity=[0.,0.,0.],radius= radius, director=[1.,0.,0.],tangents=[0.,0.,1.],external_forces=[1.,0.,0.])
-
-# SurfaceJointSideBySide_try_1.apply_forces(rod_one,None,rod_two,None)
-simulator.add_forcing_to(rod_one).using()
-simulator.add_forcing_to(rod_two).using()
-
-#callback 参考butterfly 两个rods都要写 def make_callback(self, system, time, current_step: int):
-#  固定用函数（也可以模仿timoshenko）给两个rods固定  def tip_to_base_connection(self, rod1, rod2, k, nu, kt):
-
-#def plot_video_2D
-#making vedio
 
 
 

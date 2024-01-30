@@ -89,7 +89,7 @@ simulator.append(rod_one)
 simulator.append(rod_two)
 
 #ablation test
-# assembly.glue_rods_surface_connection(rod_one,rod_two,k,nu,kt)#这两根rods依旧是分开的，所以仍旧需要对两根都施加力，同时用callback
+assembly.glue_rods_surface_connection(rod_one,rod_two,k,nu,kt)#这两根rods依旧是分开的，所以仍旧需要对两根都施加力，同时用callback
 
 
 #11.10GJM
