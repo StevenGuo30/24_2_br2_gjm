@@ -104,7 +104,7 @@ simulator.constrain(rod_two).using(
 
 # try to add forces to simulator
 origin_force = np.array([0.0, 0.0, 0.0])
-end_force = np.array([0.0, 2.0, 0.0])
+end_force = np.array([0.0, 3.0, 0.0])
 ramp_up_time = 1.0
 simulator.add_forcing_to(rod_one).using(
     EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
