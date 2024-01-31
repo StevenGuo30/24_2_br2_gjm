@@ -62,6 +62,21 @@ rod_two_spec = {
     'damping_constant' : 100
            }
 
+rod_three_spec = {
+    'n_elements' : 40,
+    'start' : np.array([0.02,0,0]),
+    'direction' : np.array([0.0,0.0,1.0]),
+    'normal' : np.array([0.0,1.0,0.0]),
+    'base_length' : 0.15,
+    'base_radius' : 0.005,
+    'density' : 1000,
+    'nu' : None,
+    'youngs_modulus' : 1e6,
+    'outer_radius' : 0.005,#现在暂时没用
+    'inner_radius' : 0.002,
+    'damping_constant' : 100
+           }
+
 time_step = 1e-4
 class Environment:
     def __init__(self,time_step):
@@ -78,6 +93,8 @@ simulator = assembly.simulator
 #尝试按照正常的pyelstica的方式定义一下
 rod_one = ea.CosseratRod.straight_rod(**rod_one_spec)
 rod_two = ea.CosseratRod.straight_rod(**rod_two_spec)
+rod_three = ea.CosseratRod.straight_rod(**rod_three_spec)
+
 
 rod_one.outer_radius = rod_one_spec['outer_radius']
 rod_one.inner_radius = rod_one_spec['inner_radius']
@@ -85,12 +102,16 @@ rod_one.inner_radius = rod_one_spec['inner_radius']
 rod_two.outer_radius = rod_two_spec['outer_radius']
 rod_two.inner_radius = rod_two_spec['inner_radius']
 
+rod_three.outer_radius = rod_three_spec['outer_radius']
+rod_three.inner_radius = rod_three_spec['inner_radius']
+
 simulator.append(rod_one)
 simulator.append(rod_two)
+simulator.append(rod_three)
 
 #ablation test
 assembly.glue_rods_surface_connection(rod_one,rod_two,k,nu,kt)#这两根rods依旧是分开的，所以仍旧需要对两根都施加力，同时用callback
-
+assembly.glue_rods_surface_connection(rod_two,rod_three,k,nu,kt)#这两根rods依旧是分开的，所以仍旧需要对两根都施加力，同时用callback
 
 #11.10GJM
 #try to add BC to simulator
@@ -101,15 +122,21 @@ simulator.constrain(rod_one).using(
 simulator.constrain(rod_two).using(
     ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
+simulator.constrain(rod_three).using(
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+)
 
 # try to add forces to simulator
 origin_force = np.array([0.0, 0.0, 0.0])
-end_force = np.array([0.0, 2.0, 0.0])
+end_force = np.array([0.0, 0.15, 0.0])
 ramp_up_time = 1.0
 simulator.add_forcing_to(rod_one).using(
     EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
 )
 simulator.add_forcing_to(rod_two).using(
+    EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
+)
+simulator.add_forcing_to(rod_three).using(
     EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
 )
 
@@ -133,6 +160,7 @@ class GJMCallBack(CallBackBaseClass):
 
 recorded_history_one = defaultdict(list)
 recorded_history_two = defaultdict(list)
+recorded_history_three = defaultdict(list)
 
 
 simulator.collect_diagnostics(rod_one).using(
@@ -143,7 +171,10 @@ simulator.collect_diagnostics(rod_two).using(
     GJMCallBack, step_skip=10, callback_params=recorded_history_two
 )
 
-# assembly.glue_rods_surface_connection(rod_one,rod_two,k,nu,kt)
+simulator.collect_diagnostics(rod_three).using(
+    GJMCallBack, step_skip=10, callback_params=recorded_history_three
+)
+
 
 simulator.finalize()
 
@@ -157,9 +188,9 @@ integrate(time_steps,simulator,final_time,n_steps)#n_steps是总步数
 
 #def plot_video_2D
 #making vedio
-filename_video = 'SurfaceJointSidebySide'
+filename_video = 'threerods_SurfaceJointSidebySide'
 plot_video(
-    [recorded_history_one, recorded_history_two],
+    [recorded_history_one, recorded_history_two, recorded_history_three],
     video_name="3d_" + filename_video + ".mp4",
     fps=50,
     step=1,
