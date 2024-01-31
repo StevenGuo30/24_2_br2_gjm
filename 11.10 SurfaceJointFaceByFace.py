@@ -158,9 +158,9 @@ integrate(time_steps,simulator,final_time,n_steps)#n_steps是总步数
 #def plot_video_2D
 #making vedio
 filename_video = 'SurfaceJointSidebySide'
-plot_video_2D(
+plot_video(
     [recorded_history_one, recorded_history_two],
-    video_name="2d_" + filename_video + ".mp4",
+    video_name="3d_" + filename_video + ".mp4",
     fps=50,
     step=1,
     x_limits=(-0.2, 0.2),
