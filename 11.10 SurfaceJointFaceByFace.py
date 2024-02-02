@@ -186,9 +186,9 @@ n_steps = int(final_time / dt)
 integrate(time_steps,simulator,final_time,n_steps)#n_steps是总步数
 
 
-#def plot_video_2D
 #making vedio
 filename_video = 'threerods_SurfaceJointSidebySide'
+title_name = 'SurfacejoinFaceByFace_11_30'
 plot_video(
     [recorded_history_one, recorded_history_two, recorded_history_three],
     video_name="3d_" + filename_video + ".mp4",
@@ -196,8 +196,9 @@ plot_video(
     step=1,
     x_limits=(-0.2, 0.2),
     y_limits=(-0.2, 0.2),
-    z_limits=(0, 0.2),
+    z_limits=(0, 0.15),
     dpi=100,
+    title=title_name,
 )
 
 
